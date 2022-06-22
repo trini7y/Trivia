@@ -20,6 +20,7 @@ class FormView extends Component {
       type: 'GET',
       success: (result) => {
         this.setState({ categories: result.categories });
+        console.log('Hello');
         return;
       },
       error: (error) => {

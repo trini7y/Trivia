@@ -127,6 +127,7 @@ class QuestionView extends Component {
   };
 
   render() {
+    console.log(this.state.categories)
     return (
       <div className='question-view'>
         <div className='categories-list'>
