@@ -1,3 +1,4 @@
+import json
 import os
 from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -50,7 +51,6 @@ def getCategories():
     for category in categories:
             getData[str(category.id)] = category.type
 
-    print(getData)
     return jsonify({
         'success': True,
         'categories': getData
@@ -73,7 +73,6 @@ def questions():
     currentQuestions = paginate_questions(request, question)
     categories = Category.query.all()
     currentCategory = Category.query.filter(Question.category == Category.id).first()
-    print(currentCategory)
     getData = {}
     for category in categories:
             getData[str(category.id)] = category.type
@@ -94,6 +93,35 @@ TEST: When you click the trash icon next to a question, the question will be rem
 This removal will persist in the database and when you refresh the page.
 """
 
+@app.route('/questions/<int:question_id>', methods=['DELETE'])
+
+def delete_question(question_id):
+    try:
+        question = Question.query.filter( Question.id == question_id).first()
+        if question is None:
+            abort(404)
+
+        question.delete()
+
+        question = Question.query.order_by(Question.id).all()
+        currentQuestions = paginate_questions(request, question)
+        categories = Category.query.all()
+        currentCategory = Category.query.filter(Question.category == Category.id).first()
+        getData = {}
+        for category in categories:
+                getData[str(category.id)] = category.type
+
+        return jsonify({
+            'success': True,
+            'questions': currentQuestions,
+            'total_questions': len(question),
+            'categories':getData,
+            'current_category': currentCategory.format()
+        })
+    except:
+        abort(404)
+
+
 """
 @TODO:
 Create an endpoint to POST a new question,
@@ -104,6 +132,26 @@ TEST: When you submit a question on the "Add" tab,
 the form will clear and the question will appear at the end of the last page
 of the questions list in the "List" tab.
 """
+@app.route('/questions', methods=['POST'])
+def add_question():
+    data = request.get_json()
+    
+    new_question = data.get('question', None)
+    new_answer = data.get('answer', None)
+    new_difficulty = data.get('difficulty', None)
+    new_category = data.get('difficulty',  None)
+
+    try:
+        quest = Question(question = new_question, answer = new_answer, 
+                    difficulty = new_difficulty, category = new_category)
+        quest.insert()
+        return jsonify({
+        'success': True,
+    })
+    except:
+        abort(404)
+
+
 
 """
 @TODO:
