@@ -1,5 +1,7 @@
 import json
 import os
+from sre_constants import SUCCESS
+from unicodedata import category
 from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
@@ -77,6 +79,8 @@ def questions():
     for category in categories:
             getData[str(category.id)] = category.type
 
+   
+    
     return jsonify({
         'success': True,
         'questions': currentQuestions,
@@ -98,6 +102,7 @@ This removal will persist in the database and when you refresh the page.
 def delete_question(question_id):
     try:
         question = Question.query.filter( Question.id == question_id).first()
+
         if question is None:
             abort(404)
 
@@ -135,21 +140,45 @@ of the questions list in the "List" tab.
 @app.route('/questions', methods=['POST'])
 def add_question():
     data = request.get_json()
-    
-    new_question = data.get('question', None)
-    new_answer = data.get('answer', None)
-    new_difficulty = data.get('difficulty', None)
-    new_category = data.get('difficulty',  None)
 
-    try:
-        quest = Question(question = new_question, answer = new_answer, 
-                    difficulty = new_difficulty, category = new_category)
-        quest.insert()
+    if 'searchTerm' in data:
+        searchTerm = data.get('searchTerm', None)
+        print(searchTerm)
+        # questions  = Question.query.filter(Question.question.contains(searchTerm)).order_by(Question.id).all()
+        questions = db.session.query(Question).filter(db.func.lower(Question.question).like(
+        f"%{searchTerm.lower()}%")).order_by(Question.id).all()
+        lstQ = []
+        currentCategory = None
+        for quest in questions:
+            currentCategory = Category.query.filter(quest.category == Category.id).first()
+            lstQ.append({
+                'id': quest.id,
+                'question':quest.question,
+                'answer': quest.answer,
+                'difficulty': quest.difficulty,
+                'category': quest.category
+            })
+
         return jsonify({
         'success': True,
+        'questions': lstQ,
+        'total_questions': len(questions),
+        'current_category': currentCategory.format()
     })
-    except:
-        abort(404)
+
+    if 'question' or 'answer' or 'difficulty' or 'category' in data:
+        new_question = data.get('question', None)
+        new_answer = data.get('answer', None)
+        new_difficulty = data.get('difficulty', None)
+        new_category = data.get('category',  None)
+        try:
+            quest = Question(question = new_question, answer = new_answer, difficulty = new_difficulty, category = new_category)
+            quest.insert()
+            return jsonify({
+                'success':True
+            })
+        except:
+            abort(404)
 
 
 
@@ -178,7 +207,6 @@ def getCategoriesById(id):
     questions = Question.query.filter(id == Question.category).all()
     currentCategory = None
     quest = []
-    print(questions)
     for question in questions:
         currentCategory = Category.query.filter(question.category == Category.id).first()
         quest.append( {

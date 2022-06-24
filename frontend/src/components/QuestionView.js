@@ -94,6 +94,7 @@ class QuestionView extends Component {
       },
       crossDomain: true,
       success: (result) => {
+        console.log(result)
         this.setState({
           questions: result.questions,
           totalQuestions: result.total_questions,
@@ -127,7 +128,7 @@ class QuestionView extends Component {
   };
 
   render() {
-    console.log(this.state.categories)
+    
     return (
       <div className='question-view'>
         <div className='categories-list'>
@@ -160,6 +161,7 @@ class QuestionView extends Component {
         <div className='questions-list'>
           <h2>Questions</h2>
           {this.state.questions.map((q, ind) => (
+
             <Question
               key={q.id}
               question={q.question}
