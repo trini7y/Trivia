@@ -4,8 +4,8 @@ from sre_constants import SUCCESS
 from unicodedata import category
 from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func
 from flask_cors import CORS
-import random
 
 from models import setup_db, Question, Category, db
 
@@ -238,6 +238,51 @@ TEST: In the "Play" tab, after a user selects "All" or a category,
 one question at a time is displayed, the user is allowed to answer
 and shown whether they were correct or not.
 """
+@app.route('/quizzes', methods=['POST'])
+def quizzes():
+    data = request.get_json()
+    prevQuestion = data.get('previous_questions', None)
+    quizCategory = data.get('quiz_category', None)
+    getID = quizCategory.get('id')
+
+    print(prevQuestion)
+    print(getID)
+    questions = Question.query.filter(getID== Question.category).order_by(
+        func.random()).limit(1).first()
+
+    quest = {}
+    if getID == 0:
+        q = Question.query.order_by(
+        func.random()
+        ).limit(1).first()
+        quest = {
+            'id': q.id,
+            'question': q.question,
+            'answer': q.answer,
+            'difficulty': q.difficulty,
+            'category': q.category
+        }
+    elif questions.id not in prevQuestion:
+        
+        quest = {
+            'id': questions.id,
+            'question': questions.question,
+            'answer': questions.answer,
+            'difficulty': questions.difficulty,
+            'category': questions.category
+        }
+   
+    
+    return jsonify({
+        'success': True,
+        'question': quest
+    })
+        
+
+
+
+   
+
 
 """
 @TODO:
