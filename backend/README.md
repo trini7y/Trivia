@@ -108,3 +108,183 @@ python test_flaskr.py
 ### Getting Started
 - Base URL: Currently this application can only be served locally, the backend application is hosted at the default ```http://127.0.0.1:5000/```, which is set as a proxy in the frontend configuration. 
 - Authentication: This version of the application does not require authentication or API keys.
+
+### Error Handling
+Errors are returned as JSON objects in the following format:
+
+ ```
+{
+  'success':False,
+  'error': 404
+  'message': 'page not found'
+}
+```
+The API will return two error types when request fails
+
+- 404: Resource not found
+- 422: Unprocessible entity
+
+### Endpoints
+
+#### GET /categories
+
+- General:
+    - Returns a category object, a list of category data, and success value.
+- Sample:  ```curl -X GET http://127.0.0.1:5000/categories```
+
+
+```
+  {
+    'categories': { 
+      '1' : "Science",
+      '2' : "Art",
+      '3' : "Geography",
+      '4' : "History",
+      '5' : "Entertainment",
+      '6' : "Sports" }
+}
+
+```
+
+#### GET /questions?page=${integer}
+
+- General:
+    - Returns a question object, a list of questions data, total_questions, categories, current_category, and success value.
+
+    - Results are paginated in groups of 10. include a request argument to choose page number, starting from 1.
+
+- Sample:  ```curl -X GET http://127.0.0.1:5000/questions```
+
+```
+    'questions': [
+        {
+            'id': 1,
+            'question': 'This is a question',
+            'answer': 'This is an answer',
+            'difficulty': 5,
+            'category': 2
+        },
+    ],
+    'totalQuestions': 100,
+    'categories': { '1' : "Science",
+    '2' : "Art",
+    '3' : "Geography",
+    '4' : "History",
+    '5' : "Entertainment",
+    '6' : "Sports" },
+    'currentCategory': 'History'
+    
+}
+
+```
+
+ #### DELETE /questions/id
+
+- General:
+    -  Deletes a question based on the id of the questions
+
+    -  Returns json object with success value, questions, total_questions, categories, 
+      current_category
+
+    - Results are paginated in groups of 10. include a request argument to choose page number, starting from 1.
+
+- Sample:  ```curl -X DELETE http://127.0.0.1:5000/questions/id```
+
+
+#### POST /questions
+
+- General:
+    - Creates a new questions using the question, answer, difficulty, and category. Returns the success value. 
+
+- curl http://127.0.0.1:5000/questions -X POST -H "Content-Type: application/json" -d 
+  {'question':'question', 'answer': 'answer', 'difficulty':'difficulty', 'new_category':'new_category'}
+
+ ```
+    {
+        'question':  'Heres a new question string',
+        'answer':  'Heres a new answer string',
+        'difficulty': 1,
+        'category': 3,
+    }
+ ```
+
+#### POST /questions   (search)
+
+
+- General:
+    - Search for value using searchTerm. Returns the success value, questions. total_questions, current_category. 
+
+- curl http://127.0.0.1:5000/questions -X POST -H "Content-Type: application/json" -d 
+  { 'searchTerm':'searchTerm' }
+
+ ```
+Request body
+    {
+      'searchTerm': 'this is the term the user is looking for'
+    }
+
+    {
+    'questions': [
+        {
+            'id': 1,
+            'question': 'This is a question',
+            'answer': 'This is an answer',
+            'difficulty': 5,
+            'category': 5
+        },
+    ],
+    'totalQuestions': 100,
+    'currentCategory': 'Entertainment'
+  }
+  
+ ```
+
+ 
+ #### GET /categories/id/questions
+
+- General:
+    - Returns a questions based on categories using the id of the category. 
+    - Returns id, question, answer, difficulty, category
+
+- curl -X GET http://127.0.0.1:5000/categories/3/questions
+
+ ```
+  {
+    'questions': [
+        {
+            'id': 1,
+            'question': 'This is a question',
+            'answer': 'This is an answer',
+            'difficulty': 5,
+            'category': 4
+        },
+    ],
+    'totalQuestions': 100,
+    'currentCategory': 'History'
+  }
+ ```
+
+  #### POST /quizzes
+
+- General:
+    - Creates quizzes using the previous_questions and the quiz_category and returns success value and a question
+
+- curl  http://127.0.0.1:5000/categories/3/questions -X POST -H  "Content-Type: application/json" -d  {'previous_questions': [], 'quiz_category': 1}
+ ```
+
+ Request body
+    {
+        'previous_questions': [1, 4, 20, 15]
+        quiz_category': 'current category'
+    }
+    
+    {
+    'question': {
+        'id': 1,
+        'question': 'This is a question',
+        'answer': 'This is an answer',
+        'difficulty': 5,
+        'category': 4
+    }
+  } 
+ ```
