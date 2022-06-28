@@ -269,7 +269,7 @@ Request body
 - General:
     - Creates quizzes using the previous_questions and the quiz_category and returns success value and a question
 
-- curl  http://127.0.0.1:5000/categories/3/questions -X POST -H  "Content-Type: application/json" -d  {'previous_questions': [], 'quiz_category': 1}
+- curl  http://127.0.0.1:5000/quizzes -X POST -H  "Content-Type: application/json" -d  {'previous_questions': [], 'quiz_category': 1}
  ```
 
  Request body
@@ -277,7 +277,7 @@ Request body
         'previous_questions': [1, 4, 20, 15]
         quiz_category': 'current category'
     }
-    
+
     {
     'question': {
         'id': 1,
