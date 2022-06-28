@@ -106,3 +106,5 @@ python test_flaskr.py
 ## API Reference
 
 ### Getting Started
+- Base URL: Currently this application can only be served locally, the backend application is hosted at the default ```http://127.0.0.1:5000/```, which is set as a proxy in the frontend configuration. 
+- Authentication: This version of the application does not require authentication or API keys.
