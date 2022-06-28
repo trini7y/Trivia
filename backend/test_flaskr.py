@@ -4,7 +4,7 @@ import json
 from flask_sqlalchemy import SQLAlchemy
 
 from flaskr import create_app
-from models import setup_db, Question, Category
+from models import setup_db, Question, Category, db
 
 
 class TriviaTestCase(unittest.TestCase):
@@ -50,17 +50,17 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue( len(data['questions']) )
         self.assertTrue( len(data['categories']) )
 
-    def test_delete_question(self):
-        res = self.client().delete('/questions/20')
-        data = json.loads(res.data)
-        question = Question.query.filter(Question.id == 20).one_or_none()
+    # def test_delete_question(self):
+    #     res = self.client().delete('/questions/13')
+    #     data = json.loads(res.data)
+    #     question = Question.query.filter(Question.id == 13).one_or_none()
 
-        self.assertEqual(res.status_code, 200)
-        self.assertEqual(data['success'], True)
-        self.assertTrue(data['questions'])
-        self.assertTrue(data['total_questions'])
-        self.assertTrue(data['categories'])
-        self.assertEqual(question, None)
+    #     self.assertEqual(res.status_code, 200)
+    #     self.assertEqual(data['success'], True)
+    #     self.assertTrue(data['questions'])
+    #     self.assertTrue(data['total_questions'])
+    #     self.assertTrue(data['categories'])
+    #     self.assertEqual(question, None)
 
     def test_post_questions(self):
         res = self.client().post('/questions', json=self.new_questions)
@@ -70,7 +70,41 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], True)
                 
 
+    def test_search_questions(self):
+        res = self.client().post('/questions', json={
+            'searchTerm': 'title'
+        })
+        data = json.loads(res.data)
 
+        db.session.query(Question).filter(db.func.lower(Question.question).like(
+            f"%{'title'.lower()}%")).order_by(Question.id).all()
+        
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['questions'])
+        self.assertTrue(data['total_questions'])
+    
+    def test_get_question_by_categories(self):
+        res = self.client().get('/categories/4/questions')
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['questions'])
+        self.assertTrue(data['total'])
+
+    def test_quizzes(self):
+        res = self.client().post('/quizzes', json={
+            'previous_questions':[],
+            'quiz_category': {
+                'type': 'click',
+                'id': 0
+            }
+        })
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['question'])
 
 # Make the tests conveniently executable
 if __name__ == "__main__":

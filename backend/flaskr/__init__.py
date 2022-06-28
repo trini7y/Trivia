@@ -151,7 +151,7 @@ def create_app(test_config=None):
             lstQ = []
             currentCategory = None
             for quest in questions:
-                currentCategory = Category.query.filter(quest.category == Category.id).first()
+                # currentCategory = Category.query.filter(quest.category == Category.id).first()
                 lstQ.append({
                     'id': quest.id,
                     'question':quest.question,
@@ -164,7 +164,7 @@ def create_app(test_config=None):
             'success': True,
             'questions': lstQ,
             'total_questions': len(questions),
-            'current_category': currentCategory.type
+            'current_category': 0
         })
 
         if 'question' or 'answer' or 'difficulty' or 'category' in data:
@@ -205,12 +205,11 @@ def create_app(test_config=None):
 
     @app.route('/categories/<int:id>/questions', methods=['GET'])
     def getCategoriesById(id):
-        questions = Question.query.filter(id == Question.category).all()
+        questions = Question.query.filter(str(id) == Question.category).all()
         currentCategory = None
         quest = []
         for question in questions:
             currentCategory = Category.query.filter(question.category == Category.id).first()
-            print( currentCategory )
             quest.append( {
                 'id': question.id,
                 'question': question.question,
@@ -245,15 +244,15 @@ def create_app(test_config=None):
         data = request.get_json()
         prevQuestion = data.get('previous_questions', None)
         quizCategory = data.get('quiz_category', None)
-        getID = quizCategory.get('id')
-
+        getID = str( quizCategory.get('id' ))
+        print(quizCategory)
         print(prevQuestion)
         print(getID)
         questions = Question.query.filter(getID== Question.category).order_by(
             func.random()).limit(1).first()
 
         quest = {}
-        if getID == 0:
+        if int(getID) == 0:
             q = Question.query.order_by(
             func.random()
             ).limit(1).first()
