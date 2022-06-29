@@ -10,9 +10,10 @@ env_path = Path('.') / '.env'
 load_dotenv(dotenv_path = env_path)
 
 name = os.getenv('DB_name')
+user = os.getenv('DB_user')
 pas = os.getenv('DB_pass')
 
-database_path = 'postgresql://{0}:{1}@{2}/{3}'.format('postgres', pas ,'localhost:5432', name)
+database_path = 'postgresql://{0}:{1}@{2}/{3}'.format(user, pas ,'localhost:5432', name)
 
 db = SQLAlchemy()
 
