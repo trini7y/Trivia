@@ -6,6 +6,7 @@ from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func
 from flask_cors import CORS
+import random
 
 from models import setup_db, Question, Category, db
 
@@ -174,35 +175,37 @@ def create_app(test_config=None):
         print(quizCategory)
         print(prevQuestion)
         print(getID)
-        questions = Question.query.filter(getID== Question.category).order_by(
-            func.random()).limit(1).first()
 
         quest = {}
-        if int(getID) == 0:
-            q = Question.query.order_by(
-            func.random()
-            ).limit(1).first()
-            quest = {
-                'id': q.id,
-                'question': q.question,
-                'answer': q.answer,
-                'difficulty': q.difficulty,
-                'category': q.category
-            }
-        elif questions.id not in prevQuestion:
-            
-            quest = {
-                'id': questions.id,
-                'question': questions.question,
-                'answer': questions.answer,
-                'difficulty': questions.difficulty,
-                'category': questions.category
-            }
-    
+        logQuestion = []
+        GD = int(getID)
+        if not prevQuestion:
+            if GD == 0:
+                questions = Question.query.all()
+            else:
+                questions = Question.query.filter(
+                    Question.category == getID).all()
+        else:
+            if GD == 0:
+                questions = Question.query.filter(Question.id.notin_(prevQuestion)).all()
+            else:
+                questions = Question.query.filter(getID == Question.category).filter(
+                Question.id.notin_(prevQuestion)).all()
+
+            print('Log Question',logQuestion)
+
+        questions = [question.format() for question in questions]
+        total_question = len(questions)
         
+        if total_question == 1:
+            random_quest = questions[0]
+        else:
+            random_quest = random.choice(questions)
+        print(questions)
+
         return jsonify({
             'success': True,
-            'question': quest
+            'question': random_quest
         })
 
     @app.errorhandler(404)
@@ -210,7 +213,7 @@ def create_app(test_config=None):
         return jsonify({
             'success':False,
             'error': 404,
-            'message': 'resource not found'
+            'message': 'Resource not found'
         }), 404
 
     @app.errorhandler(422)
@@ -220,5 +223,21 @@ def create_app(test_config=None):
             'error': 422,
             'message': 'Unprocessible entity'
         }), 422
+    @app.errorhandler(405)
+    def not_allowed(error):
+        return jsonify({
+            'success':False,
+            'error': 405,
+            'message': 'method not allowed'
+        }), 405
+
+    @app.errorhandler(400)
+    def bad_request(error):
+        return jsonify({
+            'success':False,
+            'error': 400,
+            'message': 'Bad Request'
+        }), 405
+    
 
     return app
